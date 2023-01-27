@@ -1,16 +1,41 @@
 # tour_app_seller
 
-A new Flutter application.
+PakTours, Seller application to post products around the location zone of heritage place. admin will approve the seller before seller can start selling, backed with notifications and management on products. More features included are below:
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+[Android APK](https://github.com/adilexperience/pak-tours-seller/blob/main/assets/ThePakTours%20-%20Seller.apk)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Development Environment:
+<p align="center">
+    <img src="assets/screenshots/terminal.png" width="850" height="450" />
+</p>
+<br /><br />
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<p align="center">
+    <img src="assets/screenshots/signup.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/login.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/profile.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/notifications.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/manage_products.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/all_products.png" width="450" height="850" />
+</p>
+<br />
+<p align="center">
+    <img src="assets/screenshots/add_product_overlay.png" width="450" height="850" />
+</p>
