@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tour_app_seller/Dashboard.dart';
 import 'package:tour_app_seller/Profile/profile.dart';
-import 'package:tour_app_seller/home/Edit%20product.dart';
 import 'package:tour_app_seller/home/Allproduct.dart';
+import 'package:tour_app_seller/home/Edit%20product.dart';
 import 'package:tour_app_seller/login.dart';
 import 'package:tour_app_seller/notification.dart';
 import 'package:tour_app_seller/pproduct/Addproduct.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -16,13 +16,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  static List<Widget> _widgetOptions = <Widget>[
-    Home(),
-    AddProduct(),
-    Edit_product(),
-    NotificationDialog(),
-    profile(),
-
+  static final List<Widget> _widgetOptions = <Widget>[
+    const Home(),
+    const AddProduct(),
+    const Edit_product(),
+    NotificationsScreen(),
+    const profile(),
   ];
   void _onItemTapped(int index) {
     setState(() {
@@ -109,8 +108,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-
-
 
   Future<void> logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();

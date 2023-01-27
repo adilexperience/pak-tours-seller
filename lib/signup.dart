@@ -1,12 +1,12 @@
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
-import 'package:tour_app_seller/Models/models.dart';
-import 'package:tour_app_seller/login.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:tour_app_seller/utils/api_requests/api_requests.dart';
+import 'package:tour_app_seller/utils/constants.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -20,71 +20,46 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   // string for displaying the error Message
   String? errorMessage;
-  bool _loading =false;
-
+  bool _loading = false;
 
   // our form key
   final _formKey = GlobalKey<FormState>();
   // editing Controller
-  final firstNameEditingController = new TextEditingController();
-  final secondNameEditingController = new TextEditingController();
-  final emailEditingController = new TextEditingController();
-  final passwordEditingController = new TextEditingController();
-  final confirmPasswordEditingController = new TextEditingController();
+  final fullNameEditingController = TextEditingController();
+  final emailEditingController = TextEditingController();
+  final passwordEditingController = TextEditingController();
+  final confirmPasswordEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     //first name field
     final firstNameField = TextFormField(
-        autofocus: false,
-        controller: firstNameEditingController,
-        keyboardType: TextInputType.name,
-        validator: (value) {
-          RegExp regex = new RegExp(r'^.{3,}$');
-          if (value!.isEmpty) {
-            return ("First Name cannot be Empty");
-          }
-          if (!regex.hasMatch(value)) {
-            return ("Enter Valid name(Min. 3 Character)");
-          }
-          return null;
-        },
-        onSaved: (value) {
-          firstNameEditingController.text = value!;
-        },
-        textInputAction: TextInputAction.next,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.account_circle),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          labelText: "First Name",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ));
-
-    //second name field
-    final secondNameField = TextFormField(
-        autofocus: false,
-        controller: secondNameEditingController,
-        keyboardType: TextInputType.name,
-        validator: (value) {
-          if (value!.isEmpty) {
-            return ("Second Name cannot be Empty");
-          }
-          return null;
-        },
-        onSaved: (value) {
-          secondNameEditingController.text = value!;
-        },
-        textInputAction: TextInputAction.next,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.account_circle),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          labelText: "Second Name",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ));
+      autofocus: false,
+      controller: fullNameEditingController,
+      keyboardType: TextInputType.name,
+      validator: (value) {
+        RegExp regex = RegExp(r'^.{3,}$');
+        if (value!.isEmpty) {
+          return ("First Name cannot be Empty");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("Enter Valid name(Min. 3 Character)");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        fullNameEditingController.text = value!;
+      },
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.account_circle),
+        contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+        labelText: "Full Name",
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
 
     //email field
     final emailField = TextFormField(
@@ -103,13 +78,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           return null;
         },
         onSaved: (value) {
-          firstNameEditingController.text = value!;
+          fullNameEditingController.text = value!;
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.mail),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          labelText: "Email",
+          prefixIcon: const Icon(Icons.mail),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+          labelText: "Email Address",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -121,21 +96,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         controller: passwordEditingController,
         obscureText: true,
         validator: (value) {
-          RegExp regex = new RegExp(r'^.{6,}$');
+          RegExp regex = RegExp(r'^.{6,}$');
           if (value!.isEmpty) {
             return ("Password is required for login");
           }
           if (!regex.hasMatch(value)) {
-            return ("Enter Valid Password(Min. 6 Character)");
+            return ("Enter Valid Password(Min. 8 Character)");
           }
         },
         onSaved: (value) {
-          firstNameEditingController.text = value!;
+          passwordEditingController.text = value!;
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.vpn_key),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.vpn_key),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           labelText: "Password",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -144,28 +119,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     //confirm password field
     final confirmPasswordField = TextFormField(
-        autofocus: false,
-        controller: confirmPasswordEditingController,
-        obscureText: true,
-        validator: (value) {
-          if (confirmPasswordEditingController.text !=
-              passwordEditingController.text) {
-            return "Password don't match";
-          }
-          return null;
-        },
-        onSaved: (value) {
-          confirmPasswordEditingController.text = value!;
-        },
-        textInputAction: TextInputAction.done,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.vpn_key),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          labelText: "Confirm Password",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ));
+      autofocus: false,
+      controller: confirmPasswordEditingController,
+      obscureText: true,
+      validator: (value) {
+        if (confirmPasswordEditingController.text !=
+            passwordEditingController.text) {
+          return "Password don't match";
+        }
+        return null;
+      },
+      onSaved: (value) {
+        confirmPasswordEditingController.text = value!;
+      },
+      textInputAction: TextInputAction.done,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.vpn_key),
+        contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+        labelText: "Confirm Password",
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
 
     //signup button
     final signUpButton = Material(
@@ -173,26 +149,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       borderRadius: BorderRadius.circular(30),
       color: Colors.blue,
       child: MaterialButton(
-          padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          minWidth: MediaQuery.of(context).size.width,
-          onPressed: () {
-             signUp(emailEditingController.text, passwordEditingController.text);
-             setState(() {
-               _loading = true;
-             });
-          },
-          child: (_loading)
-              ? const SizedBox(
-              width: 16,
-              height: 20,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2.5,
-              ))
-
-              : const Text('SignUp', style: TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
-          ),
+        padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+        minWidth: MediaQuery.of(context).size.width,
+        onPressed: () {
+          signUp(emailEditingController.text, passwordEditingController.text);
+        },
+        child: (_loading)
+            ? const SizedBox(
+                width: 16,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ))
+            : const Text(
+                'Register',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+      ),
     );
 
     return Scaffold(
@@ -201,11 +179,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.blue),
-          onPressed: () {
-            // passing this to our root
-            Navigator.of(context).pop();
-          },
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.blue,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Center(
@@ -221,21 +199,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     SizedBox(
-                        height: 180,
-                      child: Lottie.asset('assets/images/tour.json'),),
-                    SizedBox(height: 45),
+                      height: 180,
+                      child: Lottie.asset('assets/images/tour.json'),
+                    ),
+                    const SizedBox(height: 45),
                     firstNameField,
-                    SizedBox(height: 20),
-                    secondNameField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     emailField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     passwordField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     confirmPasswordField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     signUpButton,
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                   ],
                 ),
               ),
@@ -246,72 +223,105 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-
-
-
-
   void signUp(String email, String password) async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await _auth
-            .createUserWithEmailAndPassword(email: email, password: password)
-            .then((value) => {postDetailsToFirestore()})
-            .catchError((e) {
-          Fluttertoast.showToast(msg: e!.message);
-        });
-      } on FirebaseAuthException catch (error) {
-        switch (error.code) {
-          case "invalid-email":
-            errorMessage = "Your email address appears to be malformed.";
-            break;
-          case "wrong-password":
-            errorMessage = "Your password is wrong.";
-            break;
-          case "user-not-found":
-            errorMessage = "User with this email doesn't exist.";
-            break;
-          case "user-disabled":
-            errorMessage = "User with this email has been disabled.";
-            break;
-          case "too-many-requests":
-            errorMessage = "Too many requests";
-            break;
-          case "operation-not-allowed":
-            errorMessage = "Signing in with Email and Password is not enabled.";
-            break;
-          default:
-            errorMessage = "An undefined Error happened.";
+    String name = fullNameEditingController.text.trim();
+    String email = emailEditingController.text.trim();
+    String password = passwordEditingController.text.trim();
+    String confirmPassword = confirmPasswordEditingController.text.trim();
+
+    if (name.isEmpty) {
+      showTopSnackBar(
+        context,
+        const CustomSnackBar.error(message: "Please enter your name"),
+      );
+    } else if (!Constants.isEmailValid(email)) {
+      showTopSnackBar(
+        context,
+        const CustomSnackBar.error(
+            message: "Please enter valid email address to proceed"),
+      );
+    } else if (!Constants.isPasswordValidated(password) ||
+        (confirmPassword != password)) {
+      showTopSnackBar(
+        context,
+        const CustomSnackBar.error(
+            message:
+                "Please enter strong password and repeat password should be same"),
+      );
+    } else if (!(await Constants.askLocationPermission(context))) {
+      showTopSnackBar(
+        context,
+        const CustomSnackBar.error(
+          message: "Please grant permission for location to proceed",
+        ),
+      );
+    } else {
+      setLoading(true);
+
+      if (_formKey.currentState!.validate()) {
+        try {
+          Position position = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high);
+
+          await ApiRequests.registerSeller(
+            name,
+            email,
+            password,
+            context: context,
+            position.latitude,
+            position.longitude,
+          ).then((value) {
+            setLoading(false);
+            showTopSnackBar(
+              context,
+              const CustomSnackBar.success(
+                message:
+                    "Email verification link sent, please verify your email-address to login",
+              ),
+            );
+            ApiRequests.signOut(context);
+          }).onError((error, stackTrace) {
+            setLoading(false);
+            showTopSnackBar(
+              context,
+              CustomSnackBar.error(
+                message: error.toString(),
+              ),
+            );
+          });
+        } on FirebaseAuthException catch (error) {
+          setLoading(false);
+          switch (error.code) {
+            case "invalid-email":
+              errorMessage = "Your email address appears to be malformed.";
+              break;
+            case "wrong-password":
+              errorMessage = "Your password is wrong.";
+              break;
+            case "user-not-found":
+              errorMessage = "User with this email doesn't exist.";
+              break;
+            case "user-disabled":
+              errorMessage = "User with this email has been disabled.";
+              break;
+            case "too-many-requests":
+              errorMessage = "Too many requests";
+              break;
+            case "operation-not-allowed":
+              errorMessage =
+                  "Signing in with Email and Password is not enabled.";
+              break;
+            default:
+              errorMessage = "An undefined Error happened.";
+          }
+          Fluttertoast.showToast(msg: errorMessage!);
         }
-        Fluttertoast.showToast(msg: errorMessage!);
-        print(error.code);
       }
     }
   }
-  postDetailsToFirestore() async {
-    // calling our firestore
-    // calling our user model
-    // sedning these values
 
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-    User? user = _auth.currentUser;
-
-    UserModel userModel = UserModel();
-
-    // writing all the values
-    userModel.email = user!.email;
-    userModel.uid = user.uid;
-    userModel.firstName = firstNameEditingController.text;
-    userModel.secondName = secondNameEditingController.text;
-
-    await firebaseFirestore
-        .collection("Seller")
-        .doc(user.uid)
-        .set(userModel.toMap());
-    Fluttertoast.showToast(msg: "Account created successfully :) ");
-
-    Navigator.pushAndRemoveUntil(
-        (context),
-        MaterialPageRoute(builder: (context) => Login_Screen()),
-            (route) => false);
+  void setLoading(bool loading) {
+    _loading = loading;
+    setState(() {});
   }
 }
